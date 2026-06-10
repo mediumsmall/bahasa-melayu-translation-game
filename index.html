@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bahasa Melayu Translation Game</title>
+<style>
+:root{--text:#171717;--muted:#737373;--border:#dedede;--panel:#f6f5ef;--success-bg:#edf8f2;--success:#117247;--danger-bg:#fff0ef;--danger:#b42318}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button{font:inherit;cursor:pointer}
+.shell{width:100%;max-width:1450px;margin:auto;padding:34px 48px 42px}
+.mode-bar{display:flex;justify-content:center;gap:6px;margin-bottom:22px}
+.mode-btn{padding:10px 18px;border:1px solid var(--border);background:#fff;color:var(--muted)}
+.mode-btn:first-child{border-radius:10px 0 0 10px}.mode-btn:last-child{border-radius:0 10px 10px 0}
+.mode-btn.active{background:var(--text);border-color:var(--text);color:#fff;font-weight:650}
+.prompt{background:var(--panel);border-radius:18px;padding:36px 24px;margin-bottom:36px;text-align:center}
+.prompt p{font-size:42px;line-height:1.2;font-weight:750;margin:0}
+.prompt small{display:block;color:var(--muted);margin-top:12px;font-size:15px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;margin-bottom:24px}
+.card{border:1px solid var(--border);border-radius:18px;padding:28px 24px;text-align:center;min-width:0}
+.label{display:inline-block;padding:7px 13px;border-radius:9px;background:#e6f1fb;color:#0c447c;border:1px solid #85b7eb;font-weight:700}
+.source{display:block;font-size:29px;line-height:1.2;font-weight:730;margin:22px 0}
+.answer{display:block;width:100%;max-width:480px;margin:auto;padding:13px 15px;border:1px solid var(--border);border-radius:11px;font-size:26px;text-align:center;outline:none}
+.answer:focus{border-color:#aaa;box-shadow:0 0 0 3px rgba(0,0,0,.04)}
+.answer.wrong{border-color:var(--danger);background:var(--danger-bg);color:var(--danger)}
+.status{min-height:24px;margin-top:10px;color:var(--muted);font-size:14px}
+.status.bad{color:var(--danger)}.status.hint{color:#725000;font-weight:600}
+.word-count{display:inline-block;margin-top:10px;padding:4px 9px;border-radius:999px;background:#f5f5f5;border:1px solid var(--border);color:var(--muted);font-size:13px;font-weight:650}
+.actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:10px}
+.actions button,.footer button{padding:7px 13px;border:1px solid var(--border);border-radius:9px;background:#fff;color:var(--text)}
+.result{margin:14px auto 0;padding:14px;border-radius:11px;background:var(--success-bg);max-width:520px}
+.result.revealed{background:#f5f5f5}.result.assisted{background:#fff8e8}
+.result strong{display:block;font-size:28px;color:var(--success)}
+.result.assisted strong{color:#8a5a00}.result.revealed strong{color:#666}
+.result small{display:block;margin-top:5px;color:var(--muted)}
+.footer{color:var(--muted);font-size:14px}
+.footer-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.footer-actions{display:flex;gap:8px;flex-wrap:wrap}
+.pip{display:inline-block;width:8px;height:8px;border-radius:50%;background:#d5d5d5;margin:0 4px}.pip.on{background:var(--text)}
+.key{padding:2px 7px;border:1px solid var(--border);border-radius:4px;background:#f5f5f5;font:12px ui-monospace,SFMono-Regular,Menlo,monospace}
+@media(max-width:850px){.shell{padding:24px 18px 34px}.prompt p{font-size:34px}.grid{grid-template-columns:1fr}}
+@media(max-width:520px){.shell{padding:16px 12px 28px}.prompt{padding:25px 14px;margin-bottom:18px}.prompt p{font-size:27px}.card{padding:23px 14px}.source{font-size:25px}.answer{font-size:23px}.mode-btn{padding:10px 13px}}
+</style>
+</head>
+<body>
+<h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);margin:-1px">Bahasa Melayu translation game</h1>
+<main class="shell"><div id="game"></div></main>
+<script>
+var SENTENCES=[
+  {bm:"Itu bangunan sekolah.",en:"That is a school building.",parts:[
+    {bm:"Itu",en:"That is"},{bm:"bangunan sekolah",en:"a school building"}
+  ]},
+  {bm:"Ini rumah saya.",en:"This is my house.",parts:[
+    {bm:"Ini",en:"This is"},{bm:"rumah saya",en:"my house"}
+  ]},
+  {bm:"Dia ahli lembaga sekolah.",en:"He is a school board member.",parts:[
+    {bm:"Dia",en:"He is"},{bm:"ahli lembaga sekolah",en:"a school board member"}
+  ]},
+  {bm:"Kucing itu terselamat.",en:"That cat survived.",parts:[
+    {bm:"Kucing itu",en:"That cat"},{bm:"terselamat",en:"survived"}
+  ]},
+  {bm:"Mereka bersorak dengan gembira.",en:"They cheered happily.",parts:[
+    {bm:"Mereka",en:"They"},{bm:"bersorak dengan gembira",en:"cheered happily"}
+  ]},
+  {bm:"Air ini sangat sejuk.",en:"This water is very cold.",parts:[
+    {bm:"Air ini",en:"This water"},{bm:"sangat sejuk",en:"is very cold"}
+  ]},
+  {bm:"Selamat tinggal, kawan!",en:"Goodbye, friend!",parts:[
+    {bm:"Selamat tinggal",en:"Goodbye"},{bm:"kawan",en:"friend"}
+  ]},
+  {bm:"Ikan paus biru ialah haiwan terbesar di dunia.",en:"The blue whale is the biggest animal in the world.",parts:[
+    {bm:"Ikan paus biru",en:"The blue whale"},{bm:"ialah",en:"is"},{bm:"haiwan terbesar",en:"the biggest animal"},{bm:"di dunia",en:"in the world"}
+  ]},
+  {bm:"Bunga ros merah itu tercantik di taman ini.",en:"That red rose is the most beautiful in this garden.",parts:[
+    {bm:"Bunga ros merah itu",en:"That red rose"},{bm:"tercantik",en:"is the most beautiful"},{bm:"di taman ini",en:"in this garden"}
+  ]},
+  {bm:"Gunung Kinabalu ialah gunung tertinggi di Malaysia.",en:"Mount Kinabalu is the tallest mountain in Malaysia.",parts:[
+    {bm:"Gunung Kinabalu",en:"Mount Kinabalu"},{bm:"ialah",en:"is"},{bm:"gunung tertinggi",en:"the tallest mountain"},{bm:"di Malaysia",en:"in Malaysia"}
+  ]}
+];
+
+var direction="bm-en", index=0, states=[], values=[], hintLevel=[], availableVoices=[];
+
+function normalize(text){
+  return text.normalize("NFKC").toLocaleLowerCase("en-MY")
+    .replace(/[.,!?;:'"’‘\-]/g,"").replace(/\s+/g," ").trim();
+}
+function sourceFor(part){return direction==="bm-en"?part.bm:part.en}
+function targetFor(part){return direction==="bm-en"?part.en:part.bm}
+function fullSource(sentence){return direction==="bm-en"?sentence.bm:sentence.en}
+function fullTarget(sentence){return direction==="bm-en"?sentence.en:sentence.bm}
+function languageLabel(){return direction==="bm-en"?"English":"Bahasa Melayu"}
+function targetWordCount(part){
+  return targetFor(part).trim().split(/\s+/).filter(Boolean).length;
+}
+
+function loadVoices(){
+  if(!window.speechSynthesis)return;
+  availableVoices=speechSynthesis.getVoices();
+}
+
+function chooseVoice(lang){
+  var exact=availableVoices.filter(function(voice){
+    return (voice.lang||"").toLowerCase()===lang.toLowerCase();
+  });
+  var preferred=lang==="ms-MY"
+    ?["Amira","Osman","Malay","Malaysia"]
+    :["Samantha","Karen","Daniel","Ava","Google US English","Google UK English Female"];
+  for(var i=0;i<preferred.length;i++){
+    var match=exact.find(function(voice){
+      return voice.name.toLowerCase().indexOf(preferred[i].toLowerCase())>=0;
+    });
+    if(match)return match;
+  }
+  if(exact.length)return exact[0];
+  var prefix=lang.split("-")[0].toLowerCase();
+  return availableVoices.find(function(voice){
+    return (voice.lang||"").toLowerCase().split("-")[0]===prefix;
+  })||null;
+}
+
+if(window.speechSynthesis){
+  loadVoices();
+  speechSynthesis.onvoiceschanged=loadVoices;
+}
+
+function init(next){
+  index=next;
+  states=SENTENCES[index].parts.map(function(){return 0});
+  values=SENTENCES[index].parts.map(function(){return ""});
+  hintLevel=SENTENCES[index].parts.map(function(){return 0});
+  render();
+}
+
+function setDirection(next){
+  if(direction===next)return;
+  direction=next;
+  init(index);
+}
+
+function check(i){
+  states[i]=normalize(values[i])===normalize(targetFor(SENTENCES[index].parts[i]))?2:1;
+  renderCard(i);
+  updateFooter();
+}
+
+function hint(i){
+  hintLevel[i]=Math.min(maxHintLevel(i),hintLevel[i]+1);
+  states[i]=states[i]===0?0:1;
+  renderCard(i);
+}
+
+function reveal(i){
+  states[i]=3;
+  updateCardOnly(i);
+  updateFooter();
+}
+
+function retry(i){
+  states[i]=0;values[i]="";hintLevel[i]=0;
+  updateCardOnly(i);
+  updateFooter();
+}
+
+function revealAll(){
+  states=states.map(function(s){return s===2?2:3});
+  SENTENCES[index].parts.forEach(function(_,i){updateCardOnly(i)});
+  updateFooter();
+}
+
+function reset(){init(index)}
+
+function maxHintLevel(i){
+  return Math.max.apply(null,targetFor(SENTENCES[index].parts[i]).split(" ").map(function(word){
+    return word.length;
+  }));
+}
+
+function hintText(i){
+  var answer=targetFor(SENTENCES[index].parts[i]);
+  return answer.split(" ").map(function(word){
+    return word.slice(0,hintLevel[i])+word.slice(hintLevel[i]).replace(/./g,"_");
+  }).join(" ");
+}
+
+function cardHTML(i){
+  var part=SENTENCES[index].parts[i], state=states[i], assisted=hintLevel[i]>0;
+  if(state===2||state===3){
+    var cls=state===3?"revealed":assisted?"assisted":"";
+    return '<span class="label">'+(direction==="bm-en"?"BM → English":"English → BM")+'</span>'+
+      '<span class="source">'+sourceFor(part)+'</span>'+
+      '<div class="result '+cls+'"><strong>'+targetFor(part)+'</strong>'+
+      '<small>'+(state===3?"Answer revealed":assisted?"Correct with a hint":"Correct independently")+'</small></div>'+
+      '<div class="actions"><button onclick="retry('+i+')">try again</button></div>';
+  }
+  var status=hintLevel[i]
+    ?'<div class="status hint">'+hintText(i)+'</div>'
+    :states[i]===1
+      ?'<div class="status bad">Not quite. Check the spelling and try again.</div>'
+      :'<div class="status">Type the '+languageLabel()+' translation and press Enter.</div>';
+  var count=targetWordCount(part);
+  return '<span class="label">'+(direction==="bm-en"?"BM → English":"English → BM")+'</span>'+
+    '<span class="source">'+sourceFor(part)+'</span>'+
+    '<input id="answer-'+i+'" class="answer'+(states[i]===1?" wrong":"")+'" placeholder="Type in '+languageLabel()+'" autocomplete="off" autocorrect="off" spellcheck="false">'+
+    '<span class="word-count">Answer: '+count+' word'+(count===1?"":"s")+'</span>'+
+    status+
+    '<div class="actions"><button onclick="hint('+i+')"'+(hintLevel[i]>=maxHintLevel(i)?" disabled":"")+'>'+
+      (hintLevel[i]>=maxHintLevel(i)?"full hint shown":hintLevel[i]?"another hint":"hint")+
+      '</button><button onclick="reveal('+i+')">reveal</button></div>';
+}
+
+function attachInput(i){
+  var input=document.getElementById("answer-"+i);
+  if(!input)return;
+  input.value=values[i];
+  input.addEventListener("input",function(){values[i]=input.value});
+  input.addEventListener("keydown",function(event){
+    if(event.key==="Enter"){values[i]=input.value;check(i)}
+    event.stopPropagation();
+  });
+}
+
+function updateCardOnly(i){
+  var card=document.getElementById("card-"+i);
+  if(!card)return;
+  card.innerHTML=cardHTML(i);
+  attachInput(i);
+}
+
+function renderCard(i){updateCardOnly(i)}
+
+function speak(){
+  if(!window.speechSynthesis)return;
+  var targetLang=direction==="bm-en"?"en-US":"ms-MY";
+  var utterance=new SpeechSynthesisUtterance(fullTarget(SENTENCES[index]));
+  utterance.lang=targetLang;
+  utterance.rate=targetLang==="ms-MY"?.82:.9;
+  utterance.pitch=1;
+  var voice=chooseVoice(targetLang);
+  if(voice)utterance.voice=voice;
+  document.documentElement.dataset.speechText=utterance.text;
+  document.documentElement.dataset.speechLang=utterance.lang;
+  document.documentElement.dataset.speechVoice=voice?voice.name:"system default";
+  speechSynthesis.cancel();
+  speechSynthesis.speak(utterance);
+}
+
+function updateFooter(){
+  var done=states.every(function(s){return s>=2});
+  var independent=states.filter(function(s,i){return s===2&&hintLevel[i]===0}).length;
+  var assisted=states.filter(function(s,i){return s===2&&hintLevel[i]>0}).length;
+  var revealed=states.filter(function(s){return s===3}).length;
+  var message=done
+    ?'<span style="color:var(--success);font-weight:650">Done · '+independent+' independent · '+assisted+' assisted · '+revealed+' revealed</span>'
+    :'<span>Press <span class="key">enter</span> to check · <span class="key">space</span> to hear the translation</span>';
+  var pips=SENTENCES.map(function(_,i){return '<span class="pip'+(i===index?" on":"")+'"></span>'}).join("");
+  document.getElementById("footer").innerHTML='<div class="footer"><div style="margin-bottom:12px">'+message+'</div>'+
+    '<div class="footer-row"><div>'+pips+' <span style="margin-left:7px">'+(index+1)+' / '+SENTENCES.length+'</span></div>'+
+    '<div class="footer-actions"><button onclick="init((index-1+'+SENTENCES.length+')%'+SENTENCES.length+')">prev</button>'+
+    '<button onclick="reset()">reset</button><button onclick="revealAll()">reveal all</button>'+
+    '<button onclick="speak()">play</button><button onclick="init((index+1)%'+SENTENCES.length+')">next</button></div></div></div>';
+}
+
+function render(){
+  var sentence=SENTENCES[index];
+  document.getElementById("game").innerHTML=
+    '<div class="mode-bar" role="group" aria-label="Translation direction">'+
+      '<button class="mode-btn'+(direction==="bm-en"?" active":"")+'" onclick="setDirection(\'bm-en\')">BM → English</button>'+
+      '<button class="mode-btn'+(direction==="en-bm"?" active":"")+'" onclick="setDirection(\'en-bm\')">English → BM</button>'+
+    '</div>'+
+    '<div class="prompt"><p>'+fullSource(sentence)+'</p><small>Translate the sentence one phrase at a time.</small></div>'+
+    '<div class="grid">'+sentence.parts.map(function(_,i){return '<section class="card" id="card-'+i+'">'+cardHTML(i)+'</section>'}).join("")+'</div>'+
+    '<div id="footer"></div>';
+  sentence.parts.forEach(function(_,i){attachInput(i)});
+  updateFooter();
+}
+
+window.setDirection=setDirection;window.check=check;window.hint=hint;window.reveal=reveal;
+window.retry=retry;window.revealAll=revealAll;window.reset=reset;window.speak=speak;window.init=init;
+document.addEventListener("keydown",function(event){
+  if(event.target&&event.target.tagName==="INPUT")return;
+  if(event.code==="Space"){event.preventDefault();speak()}
+  else if(event.code==="ArrowRight"){event.preventDefault();init((index+1)%SENTENCES.length)}
+  else if(event.code==="ArrowLeft"){event.preventDefault();init((index-1+SENTENCES.length)%SENTENCES.length)}
+});
+init(0);
+</script>
+</body>
+</html>
