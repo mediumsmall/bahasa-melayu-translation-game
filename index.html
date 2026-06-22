@@ -14,6 +14,8 @@ button{font:inherit;cursor:pointer}
 .mode-btn{padding:10px 18px;border:1px solid var(--border);background:#fff;color:var(--muted)}
 .mode-btn:first-child{border-radius:10px 0 0 10px}.mode-btn:last-child{border-radius:0 10px 10px 0}
 .mode-btn.active{background:var(--text);border-color:var(--text);color:#fff;font-weight:650}
+.top-row{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.week-select{padding:9px 13px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--text);font:inherit;font-weight:650}
 .prompt{background:var(--panel);border-radius:18px;padding:36px 24px;margin-bottom:36px;text-align:center}
 .prompt p{font-size:42px;line-height:1.2;font-weight:750;margin:0}
 .prompt small{display:block;color:var(--muted);margin-top:12px;font-size:15px}
@@ -40,51 +42,185 @@ button{font:inherit;cursor:pointer}
 .pip{display:inline-block;width:8px;height:8px;border-radius:50%;background:#d5d5d5;margin:0 4px}.pip.on{background:var(--text)}
 .key{padding:2px 7px;border:1px solid var(--border);border-radius:4px;background:#f5f5f5;font:12px ui-monospace,SFMono-Regular,Menlo,monospace}
 @media(max-width:850px){.shell{padding:24px 18px 34px}.prompt p{font-size:34px}.grid{grid-template-columns:1fr}}
-@media(max-width:520px){.shell{padding:16px 12px 28px}.prompt{padding:25px 14px;margin-bottom:18px}.prompt p{font-size:27px}.card{padding:23px 14px}.source{font-size:25px}.answer{font-size:23px}.mode-btn{padding:10px 13px}}
+@media(max-width:520px){.shell{padding:16px 12px 28px}.prompt{padding:25px 14px;margin-bottom:18px}.prompt p{font-size:27px}.card{padding:23px 14px}.source{font-size:25px}.answer{font-size:23px}.mode-btn{padding:10px 13px}.top-row{margin-bottom:12px}.week-select{width:100%;max-width:280px}}
 </style>
 </head>
 <body>
 <h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);margin:-1px">Bahasa Melayu translation game</h1>
 <main class="shell"><div id="game"></div></main>
 <script>
-var SENTENCES=[
-  {bm:"Itu bangunan sekolah.",en:"That is a school building.",parts:[
-    {bm:"Itu",en:"That is"},{bm:"bangunan sekolah",en:"a school building"}
+var WEEKS={
+  "sem2-week8":{label:"Sem 2 Week 8",sentences:[
+    {bm:"Itu bangunan sekolah.",en:"That is a school building.",parts:[
+      {bm:"Itu",en:"That is"},{bm:"bangunan sekolah",en:"a school building"}
+    ]},
+    {bm:"Ini rumah saya.",en:"This is my house.",parts:[
+      {bm:"Ini",en:"This is"},{bm:"rumah saya",en:"my house"}
+    ]},
+    {bm:"Dia ahli lembaga sekolah.",en:"He is a school board member.",parts:[
+      {bm:"Dia",en:"He is"},{bm:"ahli lembaga sekolah",en:"a school board member"}
+    ]},
+    {bm:"Kucing itu terselamat.",en:"That cat survived.",parts:[
+      {bm:"Kucing itu",en:"That cat"},{bm:"terselamat",en:"survived"}
+    ]},
+    {bm:"Mereka bersorak dengan gembira.",en:"They cheered happily.",parts:[
+      {bm:"Mereka",en:"They"},{bm:"bersorak dengan gembira",en:"cheered happily"}
+    ]},
+    {bm:"Air ini sangat sejuk.",en:"This water is very cold.",parts:[
+      {bm:"Air ini",en:"This water"},{bm:"sangat sejuk",en:"is very cold"}
+    ]},
+    {bm:"Selamat tinggal, kawan!",en:"Goodbye, friend!",parts:[
+      {bm:"Selamat tinggal",en:"Goodbye"},{bm:"kawan",en:"friend"}
+    ]},
+    {bm:"Ikan paus biru ialah haiwan terbesar di dunia.",en:"The blue whale is the biggest animal in the world.",parts:[
+      {bm:"Ikan paus biru",en:"The blue whale"},{bm:"ialah",en:"is"},{bm:"haiwan terbesar",en:"the biggest animal"},{bm:"di dunia",en:"in the world"}
+    ]},
+    {bm:"Bunga ros merah itu tercantik di taman ini.",en:"That red rose is the most beautiful in this garden.",parts:[
+      {bm:"Bunga ros merah itu",en:"That red rose"},{bm:"tercantik",en:"is the most beautiful"},{bm:"di taman ini",en:"in this garden"}
+    ]},
+    {bm:"Gunung Kinabalu ialah gunung tertinggi di Malaysia.",en:"Mount Kinabalu is the tallest mountain in Malaysia.",parts:[
+      {bm:"Gunung Kinabalu",en:"Mount Kinabalu"},{bm:"ialah",en:"is"},{bm:"gunung tertinggi",en:"the tallest mountain"},{bm:"di Malaysia",en:"in Malaysia"}
+    ]}
   ]},
-  {bm:"Ini rumah saya.",en:"This is my house.",parts:[
-    {bm:"Ini",en:"This is"},{bm:"rumah saya",en:"my house"}
+  "sem3-week1":{label:"Sem 3 Week 1",sentences:[
+    {bm:"Saya suka mendengar muzik.",en:"I like to listen to music.",parts:[
+      {bm:"Saya",en:"I"},{bm:"suka mendengar",en:"like to listen to"},{bm:"muzik",en:"music"}
+    ]},
+    {bm:"Dia memberikan saya sebatang pen.",en:"He gave me a pen.",parts:[
+      {bm:"Dia",en:"He"},{bm:"memberikan saya",en:"gave me"},{bm:"sebatang pen",en:"a pen"}
+    ]},
+    {bm:"Kita mesti menggunakan komputer ini dengan baik.",en:"We must use this computer well.",parts:[
+      {bm:"Kita",en:"We"},{bm:"mesti menggunakan",en:"must use"},{bm:"komputer ini",en:"this computer"},{bm:"dengan baik",en:"well"}
+    ]},
+    {bm:"Cikgu menceritakan sebuah kisah yang menarik.",en:"The teacher told an interesting story.",parts:[
+      {bm:"Cikgu",en:"The teacher"},{bm:"menceritakan",en:"told"},{bm:"sebuah kisah yang menarik",en:"an interesting story"}
+    ]},
+    {bm:"Dia memandang saya.",en:"He looks at me.",parts:[
+      {bm:"Dia",en:"He"},{bm:"memandang saya",en:"looks at me"}
+    ]},
+    {bm:"Saya tidak ada masa sekarang.",en:"I do not have time now.",parts:[
+      {bm:"Saya",en:"I"},{bm:"tidak ada",en:"do not have"},{bm:"masa sekarang",en:"time now"}
+    ]},
+    {bm:"Jangan menyentuh anjing itu.",en:"Do not touch the dog.",parts:[
+      {bm:"Jangan menyentuh",en:"Do not touch"},{bm:"anjing itu",en:"the dog"}
+    ]},
+    {bm:"Ujian ini sangat mudah.",en:"This test is very easy.",parts:[
+      {bm:"Ujian ini",en:"This test"},{bm:"sangat mudah",en:"is very easy"}
+    ]},
+    {bm:"Permainan video ini sangat mencabar.",en:"This video game is very challenging.",parts:[
+      {bm:"Permainan video ini",en:"This video game"},{bm:"sangat mencabar",en:"is very challenging"}
+    ]},
+    {bm:"Dia boleh bercakap bahasa Melayu dengan lancar.",en:"She can speak Malay fluently.",parts:[
+      {bm:"Dia",en:"She"},{bm:"boleh bercakap",en:"can speak"},{bm:"bahasa Melayu",en:"Malay"},{bm:"dengan lancar",en:"fluently"}
+    ]}
   ]},
-  {bm:"Dia ahli lembaga sekolah.",en:"He is a school board member.",parts:[
-    {bm:"Dia",en:"He is"},{bm:"ahli lembaga sekolah",en:"a school board member"}
+  "sem3-week2":{label:"Sem 3 Week 2",sentences:[
+    {bm:"Saya suka mendaki gunung.",en:"I like to climb mountains.",parts:[
+      {bm:"Saya",en:"I"},{bm:"suka mendaki",en:"like to climb"},{bm:"gunung",en:"mountains"}
+    ]},
+    {bm:"Ikan itu sedang berenang.",en:"The fish is swimming.",parts:[
+      {bm:"Ikan itu",en:"The fish"},{bm:"sedang berenang",en:"is swimming"}
+    ]},
+    {bm:"Air sungai ini sangat sejuk.",en:"The water in this river is very cold.",parts:[
+      {bm:"Air sungai ini",en:"The water in this river"},{bm:"sangat sejuk",en:"is very cold"}
+    ]},
+    {bm:"Ibu sedang membuat kek coklat.",en:"Mother is making a chocolate cake.",parts:[
+      {bm:"Ibu",en:"Mother"},{bm:"sedang membuat",en:"is making"},{bm:"kek coklat",en:"a chocolate cake"}
+    ]},
+    {bm:"Ayah pergi memancing.",en:"Father goes fishing.",parts:[
+      {bm:"Ayah",en:"Father"},{bm:"pergi memancing",en:"goes fishing"}
+    ]},
+    {bm:"Saya suka kisah ini.",en:"I like this story.",parts:[
+      {bm:"Saya",en:"I"},{bm:"suka",en:"like"},{bm:"kisah ini",en:"this story"}
+    ]},
+    {bm:"Kami membersihkan rumah.",en:"We clean the house.",parts:[
+      {bm:"Kami",en:"We"},{bm:"membersihkan",en:"clean"},{bm:"rumah",en:"the house"}
+    ]},
+    {bm:"Penyanyi itu berdiri di atas pentas.",en:"The singer is standing on the stage.",parts:[
+      {bm:"Penyanyi itu",en:"The singer"},{bm:"berdiri",en:"is standing"},{bm:"di atas pentas",en:"on the stage"}
+    ]},
+    {bm:"Ada banyak katak di dalam kolam.",en:"There are many frogs in the pond.",parts:[
+      {bm:"Ada banyak katak",en:"There are many frogs"},{bm:"di dalam kolam",en:"in the pond"}
+    ]},
+    {bm:"Kami menonton filem di pawagam.",en:"We watched a movie at the cinema.",parts:[
+      {bm:"Kami",en:"We"},{bm:"menonton filem",en:"watched a movie"},{bm:"di pawagam",en:"at the cinema"}
+    ]}
   ]},
-  {bm:"Kucing itu terselamat.",en:"That cat survived.",parts:[
-    {bm:"Kucing itu",en:"That cat"},{bm:"terselamat",en:"survived"}
+  "sem3-week3":{label:"Sem 3 Week 3",sentences:[
+    {bm:"Saya suka mewarnakan gambar ini.",en:"I like to colour this picture.",parts:[
+      {bm:"Saya",en:"I"},{bm:"suka mewarnakan",en:"like to colour"},{bm:"gambar ini",en:"this picture"}
+    ]},
+    {bm:"Adik sedang menampal pelekat pada buku.",en:"Little brother/sister is pasting stickers on the book.",parts:[
+      {bm:"Adik",en:"Little brother/sister"},{bm:"sedang menampal",en:"is pasting"},{bm:"pelekat",en:"stickers"},{bm:"pada buku",en:"on the book"}
+    ]},
+    {bm:"Kita mesti memandu dengan hati-hati.",en:"We must drive carefully.",parts:[
+      {bm:"Kita",en:"We"},{bm:"mesti memandu",en:"must drive"},{bm:"dengan hati-hati",en:"carefully"}
+    ]},
+    {bm:"Adik bermain dengan boneka comel itu.",en:"Little sister is playing with that cute doll.",parts:[
+      {bm:"Adik",en:"Little sister"},{bm:"bermain dengan",en:"is playing with"},{bm:"boneka comel itu",en:"that cute doll"}
+    ]},
+    {bm:"Kami membuat rumah menggunakan batang aiskrim.",en:"We made a house using ice cream sticks.",parts:[
+      {bm:"Kami",en:"We"},{bm:"membuat rumah",en:"made a house"},{bm:"menggunakan batang aiskrim",en:"using ice cream sticks"}
+    ]},
+    {bm:"Saya menonton persembahan semalam.",en:"I watched a performance yesterday.",parts:[
+      {bm:"Saya",en:"I"},{bm:"menonton persembahan",en:"watched a performance"},{bm:"semalam",en:"yesterday"}
+    ]},
+    {bm:"Mereka makan malam bersama-sama.",en:"They eat dinner together.",parts:[
+      {bm:"Mereka",en:"They"},{bm:"makan malam",en:"eat dinner"},{bm:"bersama-sama",en:"together"}
+    ]},
+    {bm:"Ibu potong kek itu dengan pisau.",en:"Mother cuts the cake with a knife.",parts:[
+      {bm:"Ibu",en:"Mother"},{bm:"potong kek itu",en:"cuts the cake"},{bm:"dengan pisau",en:"with a knife"}
+    ]},
+    {bm:"Saya suka makan epal dan oren.",en:"I like to eat apples and oranges.",parts:[
+      {bm:"Saya",en:"I"},{bm:"suka makan",en:"like to eat"},{bm:"epal dan oren",en:"apples and oranges"}
+    ]},
+    {bm:"Hadiah ini adalah untuk kamu.",en:"This gift is for you.",parts:[
+      {bm:"Hadiah ini",en:"This gift"},{bm:"adalah untuk kamu",en:"is for you"}
+    ]}
   ]},
-  {bm:"Mereka bersorak dengan gembira.",en:"They cheered happily.",parts:[
-    {bm:"Mereka",en:"They"},{bm:"bersorak dengan gembira",en:"cheered happily"}
-  ]},
-  {bm:"Air ini sangat sejuk.",en:"This water is very cold.",parts:[
-    {bm:"Air ini",en:"This water"},{bm:"sangat sejuk",en:"is very cold"}
-  ]},
-  {bm:"Selamat tinggal, kawan!",en:"Goodbye, friend!",parts:[
-    {bm:"Selamat tinggal",en:"Goodbye"},{bm:"kawan",en:"friend"}
-  ]},
-  {bm:"Ikan paus biru ialah haiwan terbesar di dunia.",en:"The blue whale is the biggest animal in the world.",parts:[
-    {bm:"Ikan paus biru",en:"The blue whale"},{bm:"ialah",en:"is"},{bm:"haiwan terbesar",en:"the biggest animal"},{bm:"di dunia",en:"in the world"}
-  ]},
-  {bm:"Bunga ros merah itu tercantik di taman ini.",en:"That red rose is the most beautiful in this garden.",parts:[
-    {bm:"Bunga ros merah itu",en:"That red rose"},{bm:"tercantik",en:"is the most beautiful"},{bm:"di taman ini",en:"in this garden"}
-  ]},
-  {bm:"Gunung Kinabalu ialah gunung tertinggi di Malaysia.",en:"Mount Kinabalu is the tallest mountain in Malaysia.",parts:[
-    {bm:"Gunung Kinabalu",en:"Mount Kinabalu"},{bm:"ialah",en:"is"},{bm:"gunung tertinggi",en:"the tallest mountain"},{bm:"di Malaysia",en:"in Malaysia"}
+  "sem3-week4":{label:"Sem 3 Week 4",sentences:[
+    {bm:"Saya membeli nasi lemak di gerai itu.",en:"I bought nasi lemak at that stall.",parts:[
+      {bm:"Saya",en:"I"},{bm:"membeli nasi lemak",en:"bought nasi lemak"},{bm:"di gerai itu",en:"at that stall"}
+    ]},
+    {bm:"Kami makan tengah hari di pusat makanan.",en:"We ate lunch at the food court.",parts:[
+      {bm:"Kami",en:"We"},{bm:"makan tengah hari",en:"ate lunch"},{bm:"di pusat makanan",en:"at the food court"}
+    ]},
+    {bm:"Ayah sedang memesan minuman.",en:"Father is ordering drinks.",parts:[
+      {bm:"Ayah",en:"Father"},{bm:"sedang memesan",en:"is ordering"},{bm:"minuman",en:"drinks"}
+    ]},
+    {bm:"Dia boleh bertutur dalam tiga bahasa.",en:"He/She can speak in three languages.",parts:[
+      {bm:"Dia",en:"He/She"},{bm:"boleh bertutur",en:"can speak"},{bm:"dalam tiga bahasa",en:"in three languages"}
+    ]},
+    {bm:"Sila tunggu giliran anda.",en:"Please wait for your turn.",parts:[
+      {bm:"Sila tunggu",en:"Please wait"},{bm:"giliran anda",en:"for your turn"}
+    ]},
+    {bm:"Kita mesti membaca dengan intonasi yang betul.",en:"We must read with the correct intonation.",parts:[
+      {bm:"Kita",en:"We"},{bm:"mesti membaca",en:"must read"},{bm:"dengan intonasi yang betul",en:"with the correct intonation"}
+    ]},
+    {bm:"Nasi ayam ialah makanan kegemaran saya.",en:"Chicken rice is my favourite food.",parts:[
+      {bm:"Nasi ayam",en:"Chicken rice"},{bm:"ialah",en:"is"},{bm:"makanan kegemaran saya",en:"my favourite food"}
+    ]},
+    {bm:"Buku ini adalah tentang sains.",en:"This book is about science.",parts:[
+      {bm:"Buku ini",en:"This book"},{bm:"adalah tentang",en:"is about"},{bm:"sains",en:"science"}
+    ]},
+    {bm:"Sila beratur mengikut arahan guru.",en:"Please line up following the teacher's instructions.",parts:[
+      {bm:"Sila beratur",en:"Please line up"},{bm:"mengikut arahan guru",en:"following the teacher's instructions"}
+    ]},
+    {bm:"Perlawanan bola sepak itu bermula pada pukul sembilan pagi.",en:"The football match starts at 9 in the morning.",parts:[
+      {bm:"Perlawanan bola sepak itu",en:"The football match"},{bm:"bermula",en:"starts"},{bm:"pada pukul sembilan pagi",en:"at 9 in the morning"}
+    ]}
   ]}
-];
+};
 
+var WEEK_ORDER=["sem2-week8","sem3-week1","sem3-week2","sem3-week3","sem3-week4"];
+var requestedWeek=new URLSearchParams(window.location.search).get("week");
+var currentWeek=WEEKS[requestedWeek]?requestedWeek:"sem3-week4";
+var SENTENCES=WEEKS[currentWeek].sentences;
 var direction="bm-en", index=0, states=[], values=[], hintLevel=[], availableVoices=[];
 
 function normalize(text){
   return text.normalize("NFKC").toLocaleLowerCase("en-MY")
-    .replace(/[.,!?;:'"’‘\-]/g,"").replace(/\s+/g," ").trim();
+    .replace(/[.,!?;:'"’‘\-\/]/g," ").replace(/\s+/g," ").trim();
 }
 function sourceFor(part){return direction==="bm-en"?part.bm:part.en}
 function targetFor(part){return direction==="bm-en"?part.en:part.bm}
@@ -137,6 +273,16 @@ function setDirection(next){
   if(direction===next)return;
   direction=next;
   init(index);
+}
+
+function setWeek(next){
+  if(!WEEKS[next]||next===currentWeek)return;
+  currentWeek=next;
+  SENTENCES=WEEKS[currentWeek].sentences;
+  var url=new URL(window.location.href);
+  url.searchParams.set("week",currentWeek);
+  window.history.replaceState({}, "", url);
+  init(0);
 }
 
 function check(i){
@@ -264,7 +410,11 @@ function updateFooter(){
 
 function render(){
   var sentence=SENTENCES[index];
+  var weekOptions=WEEK_ORDER.map(function(week){
+    return '<option value="'+week+'"'+(week===currentWeek?' selected':'')+'>'+WEEKS[week].label+'</option>';
+  }).join("");
   document.getElementById("game").innerHTML=
+    '<div class="top-row"><select class="week-select" aria-label="Choose week" onchange="setWeek(this.value)">'+weekOptions+'</select></div>'+
     '<div class="mode-bar" role="group" aria-label="Translation direction">'+
       '<button class="mode-btn'+(direction==="bm-en"?" active":"")+'" onclick="setDirection(\'bm-en\')">BM → English</button>'+
       '<button class="mode-btn'+(direction==="en-bm"?" active":"")+'" onclick="setDirection(\'en-bm\')">English → BM</button>'+
@@ -276,7 +426,7 @@ function render(){
   updateFooter();
 }
 
-window.setDirection=setDirection;window.check=check;window.hint=hint;window.reveal=reveal;
+window.setDirection=setDirection;window.setWeek=setWeek;window.check=check;window.hint=hint;window.reveal=reveal;
 window.retry=retry;window.revealAll=revealAll;window.reset=reset;window.speak=speak;window.init=init;
 document.addEventListener("keydown",function(event){
   if(event.target&&event.target.tagName==="INPUT")return;
